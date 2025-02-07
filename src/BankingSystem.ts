@@ -8,7 +8,7 @@
 
 enum TransactionType {
   Deposit,
-  Withdraw
+  Withdraw,
 }
 
 type Transaction = {
@@ -23,41 +23,93 @@ type BankAccount = {
   lastname: string;
   balance: number;
   isActive: boolean;
-  transactions: Transaction[]
-}
+  transactions: Transaction[];
+};
 
 const accounts: BankAccount[] = [];
 
-function createAccount(accountNo, firstname, lastname, initialDeposit, isActive = true) {
-
+function createAccount(
+  accountNo: number,
+  firstname: string,
+  lastname: string,
+  initialDeposit: number,
+  isActive = true
+) {
+  const account: BankAccount = {
+    accountNo,
+    firstname,
+    lastname,
+    balance: initialDeposit,
+    isActive,
+    transactions: [],
+  };
+  accounts.push(account);
+  return account;
 }
 
-function processTransaction(accountNo, amount, transactionType) {
+const findAccount = (accountNo: number) =>
+  accounts.find((account) => account.accountNo === accountNo);
 
+function processTransaction(
+  accountNo: number,
+  amount: number,
+  transactionType: TransactionType
+) {
+  const account = findAccount(accountNo);
+  if (!account) return "Account not found";
+
+  if (transactionType === TransactionType.Deposit) {
+    account.balance += amount;
+    account.transactions.push({
+      accountNo,
+      amount,
+      type: TransactionType.Deposit,
+    });
+    return `${amount} deposited into account number ${accountNo}`;
+  } else {
+    if (account.balance < amount) return "Insufficient funds for withdrawal";
+    account.balance -= amount;
+    account.transactions.push({
+      accountNo,
+      amount,
+      type: TransactionType.Withdraw,
+    });
+    return `${amount} withdrawn from account number ${accountNo}`;
+  }
 }
 
-function getBalance(accountNo) {
-
+function getBalance(accountNo: number) {
+  const account = findAccount(accountNo);
+  if (!account) return "Account not found";
+  return account.balance;
 }
 
-function getTransactionHistory(accountNo) {
-
+function getTransactionHistory(accountNo: number) {
+  const account = findAccount(accountNo);
+  if (!account) return "Account not found";
+  return account.transactions;
 }
 
-function checkActiveStatus(accountNo) {
-
+function checkActiveStatus(accountNo: number) {
+  const account = findAccount(accountNo);
+  if (!account) return "Account not found";
+  return account.isActive;
 }
 
-function closeAccount(accountNo) {
-
+function closeAccount(accountNo: number) {
+  const account = findAccount(accountNo);
+  if (!account) return "Account not found";
+  const index = accounts.indexOf(account);
+  accounts.splice(index, 1);
+  return `Account number ${accountNo} closed`;
 }
 
 // Test cases (students should add more)
-console.log(createAccount(1, "John", "Smith", 100)) // { accountNo: 1, firstname: "John", lastname: "Smith", balance: 100, isActive: true, transactions: [] }
-console.log(processTransaction(1, 50, TransactionType.Deposit)) // "50 deposited into account number 1"
-console.log(processTransaction(1, 20, TransactionType.Withdraw)) // "20 withdrawn from account number 1"
-console.log(processTransaction(1, 500, TransactionType.Withdraw)) // "Insufficient funds for withdrawal"
-console.log(getBalance(1)) // 130
-console.log(getTransactionHistory(1)) // [{ accountNo: 1, amount: 50, type: TransactionType.Deposit }, { accountNo: 1, amount: 20, type: TransactionType.Withdraw }]
-console.log(checkActiveStatus(1)) // true
-console.log(closeAccount(1)) // "Account number 1 closed"
+console.log(createAccount(1, "John", "Smith", 100)); // { accountNo: 1, firstname: "John", lastname: "Smith", balance: 100, isActive: true, transactions: [] }
+console.log(processTransaction(1, 50, TransactionType.Deposit)); // "50 deposited into account number 1"
+console.log(processTransaction(1, 20, TransactionType.Withdraw)); // "20 withdrawn from account number 1"
+console.log(processTransaction(1, 500, TransactionType.Withdraw)); // "Insufficient funds for withdrawal"
+console.log(getBalance(1)); // 130
+console.log(getTransactionHistory(1)); // [{ accountNo: 1, amount: 50, type: TransactionType.Deposit }, { accountNo: 1, amount: 20, type: TransactionType.Withdraw }]
+console.log(checkActiveStatus(1)); // true
+console.log(closeAccount(1)); // "Account number 1 closed"
